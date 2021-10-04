@@ -9,7 +9,7 @@ import random
 import flipbird_function
 
 # Parameters:
-H: int = 600
+H: int = 900
 W: int = 2000
 SIZE = (W,H )
 BIRD_ROW: int = 50
@@ -17,7 +17,7 @@ BIRD_COL: int = 200
 BIRD_HEIGHT = int(H/BIRD_ROW)
 BIRD_WIDTH = int(W/BIRD_COL)
 
-tick: int = 10
+tick: int = 70
 
 BIRD_COLOR : tuple[int,int,int] = (176,48,96)
 RAYS_COLOR : tuple[int,int,int] = (30, 144, 255)
@@ -28,13 +28,15 @@ BIRD_X =  int(BIRD_COL/10) # 鸟的x是不动的，只在y上进行变动,
 BIRD_Y =  int(BIRD_ROW/2) # Note: 鸟的位置是col， row，不是绝对位置
 
 
-DOWN_SPEED = 1 # 下降的速度和上升的速度
-UP_SPEED = 8
+DOWN_SPEED = 0.3 # 下降的速度和上升的速度
+UP_SPEED = 6
 
 RAYS_LEN = 100
-RAYS_ROW = 100
 RAYS_WIDTH = 10
-RAYS_SPEED = 20
+RAYS_ROW = H/RAYS_WIDTH
+RAYS_SPEED = 5
+
+K = 25 # 初始化发射射线的帧数（频率）
 
 
 ##########
@@ -67,9 +69,29 @@ bird_rect = flipbird_function.Draw_Rect(BIRD_HEIGHT,
 rays_rect = flipbird_function.RAY_Draw_Rect(RAYS_WIDTH,
                                         RAYS_LEN,
                                         window)
+
+
 pygame.font.init()
 font = pygame.font.Font('freesansbold.ttf', 32)
-board = flipbird_function.show_score(window,)
+
+
+def show_score(score_):
+    _score = font.render('Score : ' + str(score_), True, (255,255,255))
+    window.blit(_score, (5,5))
+
+def show_dead(score_):
+    pygame.draw.rect(window, (0, 0, 0), (0, 0, W, H))  # 背景
+    _cai = font.render('Vegetable', True, (255, 255, 255))
+    window.blit(_cai, (int(W/2), int(H  / 2)))
+
+
+# 死掉？
+dead_ = flipbird_function.dead(bird,
+                               BIRD_WIDTH,
+                               BIRD_HEIGHT,
+                               RAYS_WIDTH,
+                               RAYS_LEN)
+
 
 while not quit and not dead:
     score += 1
@@ -88,7 +110,8 @@ while not quit and not dead:
 
 
     # 发射射线
-    if not score % 5: # 每五帧发射一次射线
+    K *= 0.999
+    if not score % int(K): # 每K帧发射一次射线
         shooter.add_ray()
 
 
@@ -97,13 +120,20 @@ while not quit and not dead:
 
     bird_rect(*bird(), BIRD_COLOR)  # 画出鸟的位置
 
-    ray_list = shooter(RAYS_SPEED)
+    RAYS_SPEED *= 1.000000001 #加速
+
+    ray_list = shooter(int(RAYS_SPEED))
     for ray in ray_list :
         y = ray[0]
         head = max(0, ray[1])
         tail = min(W, ray[1]+RAYS_LEN)
-        rays_rect(head, y, RAYS_COLOR)
+        rays_rect(head, y, RAYS_COLOR, tail)
 
+    show_score(score)
+
+    dead = dead_(ray_list)
+    if dead:
+        break
 
     pygame.display.flip()  # 让出控制权给系统
 
@@ -112,7 +142,9 @@ while not quit and not dead:
     clock.tick(tick)
 
 # 收尾工作
-if not quit:
-    sleep(10)
+
+show_dead(score)
+pygame.display.flip()
+sleep(1)
 pygame.display.quit()
 pygame.quit()

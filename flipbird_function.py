@@ -62,11 +62,12 @@ class RAY_Draw_Rect:
     def __call__(self,
                   cordn_x,
                   cordn_y,
-                  color):
+                  color,
+                 tail):
         top = cordn_y*(self.cell_height)
         pygame.draw.rect(
             self.window, color,
-            (cordn_x, top, self.cell_width, self.cell_height )
+            (cordn_x, top, tail - cordn_x , self.cell_height )
         )
 
 class rays:
@@ -102,13 +103,36 @@ class rays:
                 break
         return self.rays[:self.__len__() - i]
 
-class show_score:
-    def __init__(self,window, font):
-        self.window = window
-        self.font = font
 
-    def __call__(self, score_):
-        _score = self.font.render('Score : ' + str(score_), True, (0,0,0))
-        self.window.blit(_score, (5,5))
+class dead:
+    def __init__(self,
+                 bird,
+                 bird_width,
+                 bird_height,
+                 ray_width,
+                 ray_len,
+                 ):
+        self.bird = bird
+        self.bird_width = bird_width
+        self.bird_height = bird_height
+        self.ray_width = ray_width
+        self.ray_len = ray_len
+
+    def __call__(self,
+                 ray_list):
+        bird_X, bird_Y = self.bird()
+        bird_X *= self.bird_width
+        bird_Y *= self.bird_height
+        for ray in ray_list:
+            ray_x = ray[0]*self.ray_width
+            if ray[1] < bird_X < ray[1]+self.ray_len and ray_x< bird_Y < ray_x + self.ray_width:
+                return True
+            if ray[1] < bird_X+ self.bird_width < ray[1]+self.ray_len and ray_x< bird_Y < ray_x + self.ray_width:
+                return True
+            if ray[1] < bird_X < ray[1]+self.ray_len and ray_x< bird_Y+ self.bird_width < ray_x + self.ray_width:
+                return True
+            if ray[1] < bird_X+ self.bird_width < ray[1]+self.ray_len and ray_x< bird_Y+self.bird_width < ray_x + self.ray_width:
+                return True
+        return False
 
 
