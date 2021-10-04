@@ -13,16 +13,21 @@ class BIRD:
                  init_x,
                  init_y,
                  up_once,
-                 down_once):
+                 down_once,
+                 gravity):
         self.x = init_x
         self.y = init_y
         self.up_mv = up_once
         self.down_mv = down_once
+        self.down_mv_ = down_once
+        self.gravity = gravity
 
     def up(self):
         self.y -= self.up_mv
+        self.down_mv = self.down_mv_
 
     def down(self):
+        self.down_mv *= self.gravity
         self.y += self.down_mv
 
     def __call__(self):

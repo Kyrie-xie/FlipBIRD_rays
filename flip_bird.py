@@ -17,7 +17,7 @@ BIRD_COL: int = 200
 BIRD_HEIGHT = int(H/BIRD_ROW)
 BIRD_WIDTH = int(W/BIRD_COL)
 
-tick: int = 70
+tick: int = 200
 
 BIRD_COLOR : tuple[int,int,int] = (176,48,96)
 RAYS_COLOR : tuple[int,int,int] = (30, 144, 255)
@@ -28,17 +28,17 @@ BIRD_X =  int(BIRD_COL/10) # 鸟的x是不动的，只在y上进行变动,
 BIRD_Y =  int(BIRD_ROW/2) # Note: 鸟的位置是col， row，不是绝对位置
 
 
-DOWN_SPEED = 0.3 # 下降的速度和上升的速度
+DOWN_SPEED = 0.1 # 下降的速度和上升的速度
 UP_SPEED = 6
 
 RAYS_LEN = 100
 RAYS_WIDTH = 10
 RAYS_ROW = H/RAYS_WIDTH
-RAYS_SPEED = 5
+RAYS_SPEED = 2
 
 K = 25 # 初始化发射射线的帧数（频率）
 
-
+GRAVITY = 1.01
 ##########
 # Codes: #
 ##########
@@ -54,7 +54,8 @@ clock = pygame.time.Clock()
 bird = flipbird_function.BIRD(BIRD_X,
                               BIRD_Y,
                               UP_SPEED,
-                              DOWN_SPEED
+                              DOWN_SPEED,
+                              GRAVITY
                               )
 # 初始化射线发射器
 shooter = flipbird_function.rays(RAYS_LEN,
@@ -81,7 +82,7 @@ def show_score(score_):
 
 def show_dead(score_):
     pygame.draw.rect(window, (0, 0, 0), (0, 0, W, H))  # 背景
-    _cai = font.render('Vegetable', True, (255, 255, 255))
+    _cai = font.render('Que Shi Cai', True, (255, 255, 255))
     window.blit(_cai, (int(W/2), int(H  / 2)))
 
 
@@ -93,6 +94,11 @@ dead_ = flipbird_function.dead(bird,
                                RAYS_LEN)
 
 
+
+
+
+show_dead(score)
+pygame.display.flip()
 while not quit and not dead:
     score += 1
     for event in pygame.event.get():
@@ -142,7 +148,6 @@ while not quit and not dead:
     clock.tick(tick)
 
 # 收尾工作
-
 show_dead(score)
 pygame.display.flip()
 sleep(1)
