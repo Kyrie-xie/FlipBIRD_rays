@@ -14,6 +14,6 @@ Installation:
 
 Running:
 
-    python /path/to/FlipBiRD_rays/flipbird_function.py
+    python /path/to/FlipBiRD_rays/flip_bird.py
 
 
