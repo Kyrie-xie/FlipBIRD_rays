@@ -1,5 +1,6 @@
 # FlipBIRD_rays
 
+![alt text](https://github.com/Kyrie-xie/FlipBIRD_rays/blob/main/img/img.png?raw=true)
 
 一个从Flip bird汲取灵感的小游戏，用于pygame的练手。当前只支持单回合的python console运行。后续会支持.exe的运行，
 以及更精细的画面设计（待我慢慢学）。
