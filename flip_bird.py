@@ -1,153 +1,95 @@
-'''
-@Editor: Jinxing
-@Description: FlipBird-ray
-'''
-from time import sleep
-import pygame
-import flipbird_function
-
-# Parameters:
-H: int = 900
-W: int = 1500
-SIZE = (W,H )
-BIRD_ROW: int = 50
-BIRD_COL: int = 200
-BIRD_HEIGHT = int(H/BIRD_ROW)
-BIRD_WIDTH = int(W/BIRD_COL)
-
-tick: int = 20
-
-BIRD_COLOR : tuple = (176,48,96)
-RAYS_COLOR : tuple = (30, 144, 255)
-BG_COLOR: tuple = (0,0,0)
+import pygame, os,time
+from FlipBIRD_rays.base.color import color
+from FlipBIRD_rays.base.windowbase import WindowCreation
+from FlipBIRD_rays.engine.main import Game_Main
+from FlipBIRD_rays.engine._music import define_music
 
 
-BIRD_X =  int(BIRD_COL/10) # 鸟的x是不动的，只在y上进行变动,
-BIRD_Y =  int(BIRD_ROW/2) # Note: 鸟的位置是col， row，不是绝对位置
+class StartSurf:
+    def __init__(self,
+                 window: WindowCreation):
+        self.window = window
+        pygame.font.init()
+        self.font = pygame.font.Font('freesansbold.ttf', 80)
+        # self.start_bottom()
+        self.button: bool
+        self.clock = pygame.time.Clock()
+
+    def show(self):
+        _quit = False
+        _start = False
+        define_music(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'music/bkg_music1.mp3'))
+        while not _quit:
+            pygame.draw.rect(self.window.get_window(), color.black, (0, 0, self.window.W, self.window.H))  # 背景
+
+            TextSurf, TextRect = self.text_objects('FlipSpaceShip', color.white)
+            TextRect.center = self.window.get_pos(0.5, 0.35)
+            self.window.get_window().blit(TextSurf, TextRect)
+
+            for event in pygame.event.get():
+                # print(event)
+                if event.type == pygame.QUIT:
+                    _quit = True
+                    break
+            _start = self.button('Play', *self.window.get_pos(0.4, 0.55),
+                                 *self.window.get_len(0.2, 0.09), color.red, color.green)
+
+            _quit = self.button('Quit', *self.window.get_pos(0.4, 0.69),
+                                 *self.window.get_len(0.2, 0.09), color.red, color.green)
+
+            if _start:
+                define_music(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'music/bkg_music0.mp3'))
+                main = Game_Main(self.window.get_window(), self.font)
+                main.run()
+                _start = False
+                define_music(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'music/bkg_music1.mp3'))
+                time.sleep(2)
+
+            pygame.display.flip()
+            self.clock.tick(100)
 
 
-DOWN_SPEED = 0.1 # 下降的速度和上升的速度
-UP_SPEED = 6
+    def text_objects(self, text, _color):
+        textSurface = self.font.render(text, True, _color)
+        return textSurface, textSurface.get_rect()
 
-RAYS_LEN = 100
-RAYS_WIDTH = 10
-RAYS_ROW = H/RAYS_WIDTH
-RAYS_SPEED = 6
+    def button(self, msg, x, y, w, h, ic, ac):
 
-K = 30 # 初始化发射射线的帧数（频率）
+        mouse = pygame.mouse.get_pos()
 
-GRAVITY = 1.01
-##########
-# Codes: #
-##########
-score = 0 # 活着的时间
-dead = False
-quit = False
-window = pygame.display.set_mode(SIZE)
-pygame.display.set_caption('FlipBird')
-clock = pygame.time.Clock()
-
-
-# 给鸟初始化
-bird = flipbird_function.BIRD(BIRD_X,
-                              BIRD_Y,
-                              UP_SPEED,
-                              DOWN_SPEED,
-                              GRAVITY
-                              )
-# 初始化射线发射器
-shooter = flipbird_function.rays(RAYS_LEN,
-                                 RAYS_ROW,
-                                 W
-                                 )
-
-# 方块画手
-bird_rect = flipbird_function.Draw_Rect(BIRD_HEIGHT,
-                                        BIRD_WIDTH,
-                                        window)
-rays_rect = flipbird_function.RAY_Draw_Rect(RAYS_WIDTH,
-                                            RAYS_LEN,
-                                            window)
+        if x + w > mouse[0] > x and y + h > mouse[1] > y:
+            pygame.draw.rect(self.window.get_window(), ac, (x - 10, y - 10, w + 20, h + 20))
+            TextSurf, TextRect = self.text_objects(msg, color.black)
+            TextRect.center = (x + (w / 2), (y + (h / 2)))
+            self.window.get_window().blit(TextSurf, TextRect)
+            if pygame.mouse.get_pressed()[0]:
+                return True
+        else:
+            pygame.draw.rect(self.window.get_window(), ic, (x, y, w, h))
+            TextSurf, TextRect = self.text_objects(msg, color.black)
+            TextRect.center = (x + (w / 2), (y + (h / 2)))
+            self.window.get_window().blit(TextSurf, TextRect)
+        return False
 
 
-pygame.font.init()
-font = pygame.font.Font('freesansbold.ttf', 32)
+if __name__ == '__main__':
+    import sys
 
+    display_width = 1500
+    H = 750
+    H: int = 900
+    W: int = 1500
+    SIZE = (W, H)
+    window = WindowCreation(*SIZE)
 
-def show_score(score_):
-    _score = font.render('Score : ' + str(score_), True, (255,255,255))
-    window.blit(_score, (5,5))
+    pygame.display.set_caption('FlipBird')
 
-def show_dead(score_):
-    pygame.draw.rect(window, (0, 0, 0), (0, 0, W, H))  # 背景
-    _cai = font.render('Que Shi Cai', True, (255, 255, 255))
-    window.blit(_cai, (int(W/2), int(H  / 2)))
+    pygame.font.init()
+    font = pygame.font.Font('freesansbold.ttf', 32)
 
-
-# 死掉？
-dead_ = flipbird_function.dead(bird,
-                               BIRD_WIDTH,
-                               BIRD_HEIGHT,
-                               RAYS_WIDTH,
-                               RAYS_LEN)
-
-
-
-
-
-show_dead(score)
-pygame.display.flip()
-while not quit and not dead:
-    score += 1
-    for event in pygame.event.get():
-        if event.type== pygame.QUIT:
-            quit = True
-            break
-        elif event.type == pygame.KEYDOWN:
-            if event.key == 32: #回车让鸟飞高
-                bird.up()
-
-    bird.down() #鸟的自然下降
-
-
-
-
-
-    # 发射射线
-    K *= 0.999
-    if not score % int(K): # 每K帧发射一次射线
-        shooter.add_ray()
-
-
-    # 渲染 - 画面
-    pygame.draw.rect(window, BG_COLOR, (0, 0, W, H))  # 背景
-
-    bird_rect(*bird(), BIRD_COLOR)  # 画出鸟的位置
-
-    RAYS_SPEED *= 1.000000001 #加速
-
-    ray_list = shooter(int(RAYS_SPEED))
-    for ray in ray_list :
-        y = ray[0]
-        head = max(0, ray[1])
-        tail = min(W, ray[1]+RAYS_LEN)
-        rays_rect(head, y, RAYS_COLOR, tail)
-
-    show_score(score)
-
-    dead = dead_(ray_list)
-    if dead:
-        break
-
-    pygame.display.flip()  # 让出控制权给系统
-
-
-    # 设置帧数
-    clock.tick(tick)
-
-# 收尾工作
-show_dead(score)
-pygame.display.flip()
-sleep(1)
-pygame.display.quit()
-pygame.quit()
+    s = StartSurf(window)
+    s.show()
+    pygame.display.quit()
+    pygame.quit()
+    print('ok')
+    sys.exit()
